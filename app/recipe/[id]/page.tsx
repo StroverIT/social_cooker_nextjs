@@ -1,60 +1,81 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ArrowLeft, Clock, Users, Flame, Plus, Minus, 
-  ChefHat, ShoppingCart, Check, Timer, ChevronRight
-} from 'lucide-react';
-import { useApp } from '@/context/AppContext';
-import { Button } from '@/components/ui/button';
-import { CATEGORIES, TAGS, ShoppingItem, calculateZoneBlocks } from '@/types';
-import { cn } from '@/lib/utils';
-import { MacroDisplay } from '@/components/MacroDisplay';
-import { RecipeRating } from '@/components/recipe/RecipeRating';
-import { RecipeComments } from '@/components/recipe/RecipeComments';
-import { ReportDialog } from '@/components/recipe/ReportDialog';
-import { ConsumeButton } from '@/components/recipe/ConsumeButton';
+"use client";
+
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowLeft,
+  Clock,
+  Users,
+  Flame,
+  Plus,
+  Minus,
+  ChefHat,
+  ShoppingCart,
+  Check,
+  Timer,
+  ChevronRight,
+} from "lucide-react";
+import { useApp } from "@/context/AppContext";
+import { Button } from "@/components/ui/button";
+import { CATEGORIES, TAGS, ShoppingItem, calculateZoneBlocks } from "@/types";
+import { cn } from "@/lib/utils";
+import { MacroDisplay } from "@/components/MacroDisplay";
+import { RecipeRating } from "@/components/recipe/RecipeRating";
+import { RecipeComments } from "@/components/recipe/RecipeComments";
+import { ReportDialog } from "@/components/recipe/ReportDialog";
+import { ConsumeButton } from "@/components/recipe/ConsumeButton";
 
 export default function RecipeDetailPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { user, recipes, shoppingList, addToShoppingList, removeFromShoppingList } = useApp();
+  const params = useParams();
+  const id = params.id as string;
+  const router = useRouter();
+  const {
+    user,
+    recipes,
+    shoppingList,
+    addToShoppingList,
+    removeFromShoppingList,
+  } = useApp();
   const [servings, setServings] = useState(1);
   const [cookingMode, setCookingMode] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
-  const recipe = recipes.find(r => r.id === id);
+  const recipe = recipes.find((r) => r.id === id);
 
   if (!recipe) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground mb-4">Рецептата не е намерена</p>
-          <Button onClick={() => navigate(-1)}>Назад</Button>
+          <Button onClick={() => router.back()}>Назад</Button>
         </div>
       </div>
     );
   }
 
-  const category = CATEGORIES.find(c => c.id === recipe.category);
+  const category = CATEGORIES.find((c) => c.id === recipe.category);
   const multiplier = servings / recipe.servings;
-  const isInShoppingList = shoppingList.some(item => item.recipeId === recipe.id);
-  const showZoneBlocks = user?.dietTypes.includes('zone') || recipe.dietTypes.includes('zone');
-  
+  const isInShoppingList = shoppingList.some(
+    (item) => item.recipeId === recipe.id
+  );
+  const showZoneBlocks =
+    user?.dietTypes.includes("zone") || recipe.dietTypes.includes("zone");
+
   const scaledMacros = {
     protein: Math.round(recipe.macros.protein * multiplier),
     carbs: Math.round(recipe.macros.carbs * multiplier),
     fat: Math.round(recipe.macros.fat * multiplier),
     calories: Math.round(recipe.macros.calories * multiplier),
   };
-  
+
   const zoneBlocks = showZoneBlocks ? calculateZoneBlocks(scaledMacros) : null;
 
   const handleAddToShoppingList = () => {
     if (isInShoppingList) {
       removeFromShoppingList(recipe.id);
     } else {
-      const items: ShoppingItem[] = recipe.ingredients.map(ing => ({
+      const items: ShoppingItem[] = recipe.ingredients.map((ing) => ({
         ...ing,
         amount: Math.round(ing.amount * multiplier * 10) / 10,
         recipeId: recipe.id,
@@ -68,7 +89,6 @@ export default function RecipeDetailPage() {
   if (cookingMode) {
     return (
       <div className="min-h-screen bg-foreground text-background">
-        {/* Cooking Mode Header */}
         <header className="flex items-center justify-between p-4 border-b border-background/20">
           <button onClick={() => setCookingMode(false)}>
             <ArrowLeft className="w-6 h-6" />
@@ -80,7 +100,6 @@ export default function RecipeDetailPage() {
           </div>
         </header>
 
-        {/* Step Display */}
         <main className="p-6">
           <div className="mb-8">
             <p className="text-background/60 text-sm mb-2">
@@ -114,7 +133,6 @@ export default function RecipeDetailPage() {
           </AnimatePresence>
         </main>
 
-        {/* Navigation */}
         <footer className="fixed bottom-0 left-0 right-0 p-4 safe-bottom flex gap-4">
           <Button
             variant="outline"
@@ -136,7 +154,7 @@ export default function RecipeDetailPage() {
             }}
             className="flex-1 gradient-primary text-primary-foreground border-0"
           >
-            {currentStep < recipe.instructions.length - 1 ? 'Напред' : 'Готово'}
+            {currentStep < recipe.instructions.length - 1 ? "Напред" : "Готово"}
             <ChevronRight className="w-5 h-5 ml-1" />
           </Button>
         </footer>
@@ -146,17 +164,16 @@ export default function RecipeDetailPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Image Header */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        <img 
-          src={recipe.image} 
+        <img
+          src={recipe.image}
           alt={recipe.title}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
-        
+
         <button
-          onClick={() => navigate(-1)}
+          onClick={() => router.back()}
           className="absolute top-4 left-4 w-10 h-10 rounded-full bg-background/80 backdrop-blur-sm flex items-center justify-center"
         >
           <ArrowLeft className="w-5 h-5 text-foreground" />
@@ -173,7 +190,6 @@ export default function RecipeDetailPage() {
       </div>
 
       <main className="px-4 max-w-lg mx-auto -mt-2">
-        {/* Quick Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -193,26 +209,24 @@ export default function RecipeDetailPage() {
           </div>
         </motion.div>
 
-        {/* Rating */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
           className="py-4 border-b border-border"
         >
-          <RecipeRating 
+          <RecipeRating
             recipeId={recipe.id}
             averageRating={recipe.averageRating}
             totalRatings={recipe.ratings?.length || 0}
           />
         </motion.div>
 
-        {/* Tags */}
         <div className="flex flex-wrap gap-2 py-4">
-          {recipe.tags.map(tagId => {
-            const tag = TAGS.find(t => t.id === tagId);
+          {recipe.tags.map((tagId) => {
+            const tag = TAGS.find((t) => t.id === tagId);
             return (
-              <span 
+              <span
                 key={tagId}
                 className="px-3 py-1 bg-accent text-accent-foreground rounded-full text-sm"
               >
@@ -222,7 +236,6 @@ export default function RecipeDetailPage() {
           })}
         </div>
 
-        {/* Macros with distinct colors */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -236,18 +249,19 @@ export default function RecipeDetailPage() {
             calories={scaledMacros.calories}
             showZoneBlocks={showZoneBlocks}
           />
-          
+
           {showZoneBlocks && zoneBlocks && (
             <div className="mt-2 bg-accent/50 rounded-lg p-3">
               <p className="text-xs text-center text-muted-foreground">
-                <span className="font-semibold">Зонова диета:</span>{' '}
-                {zoneBlocks.proteinBlocks} Блока Протеини • {zoneBlocks.carbBlocks} Блока Въглехидрати • {zoneBlocks.fatBlocks} Блока Мазнини
+                <span className="font-semibold">Зонова диета:</span>{" "}
+                {zoneBlocks.proteinBlocks} Блока Протеини •{" "}
+                {zoneBlocks.carbBlocks} Блока Въглехидрати •{" "}
+                {zoneBlocks.fatBlocks} Блока Мазнини
               </p>
             </div>
           )}
         </motion.div>
 
-        {/* Servings Adjuster */}
         <div className="flex items-center justify-between py-4 border-y border-border mb-6">
           <span className="font-medium text-foreground">Порции</span>
           <div className="flex items-center gap-4">
@@ -257,7 +271,9 @@ export default function RecipeDetailPage() {
             >
               <Minus className="w-4 h-4" />
             </button>
-            <span className="text-xl font-bold text-foreground w-8 text-center">{servings}</span>
+            <span className="text-xl font-bold text-foreground w-8 text-center">
+              {servings}
+            </span>
             <button
               onClick={() => setServings(servings + 1)}
               className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-foreground"
@@ -267,14 +283,13 @@ export default function RecipeDetailPage() {
           </div>
         </div>
 
-        {/* Ingredients */}
         <section className="mb-6">
           <h2 className="font-display text-lg font-semibold text-foreground mb-4">
             Съставки
           </h2>
           <div className="space-y-2">
             {recipe.ingredients.map((ing, index) => (
-              <div 
+              <div
                 key={index}
                 className="flex items-center justify-between py-2 border-b border-border last:border-0"
               >
@@ -287,7 +302,6 @@ export default function RecipeDetailPage() {
           </div>
         </section>
 
-        {/* Instructions */}
         <section className="mb-6">
           <h2 className="font-display text-lg font-semibold text-foreground mb-4">
             Приготвяне
@@ -304,16 +318,13 @@ export default function RecipeDetailPage() {
           </div>
         </section>
 
-        {/* Report Button */}
         <div className="flex justify-center mb-6">
           <ReportDialog recipeId={recipe.id} recipeName={recipe.title} />
         </div>
 
-        {/* Comments Section */}
         <RecipeComments recipeId={recipe.id} comments={recipe.comments || []} />
       </main>
 
-      {/* Bottom Actions */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/80 backdrop-blur-lg border-t border-border safe-bottom">
         <div className="flex gap-3 max-w-lg mx-auto">
           <Button
@@ -327,8 +338,7 @@ export default function RecipeDetailPage() {
           >
             {isInShoppingList ? (
               <>
-                <Check className="w-5 h-5 mr-2" />
-                В списъка
+                <Check className="w-5 h-5 mr-2" />В списъка
               </>
             ) : (
               <>
@@ -337,9 +347,9 @@ export default function RecipeDetailPage() {
               </>
             )}
           </Button>
-          
+
           <ConsumeButton recipe={recipe} servings={servings} />
-          
+
           <Button
             size="lg"
             onClick={() => setCookingMode(true)}

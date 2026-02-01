@@ -1,16 +1,37 @@
-import { motion } from 'framer-motion';
-import { User, Moon, Sun, LogOut, Edit, Flame, Target, Activity, Utensils, RotateCcw } from 'lucide-react';
-import { useApp } from '@/context/AppContext';
-import { BottomNav } from '@/components/BottomNav';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { calculateTargetCalories, calculateMacros } from '@/lib/calculations';
-import { GOALS, DIET_TYPES, ACTIVITY_LEVELS } from '@/types';
-import { MacroDisplay } from '@/components/MacroDisplay';
-import { Progress } from '@/components/ui/progress';
+"use client";
+
+import { motion } from "framer-motion";
+import {
+  User,
+  Moon,
+  Sun,
+  LogOut,
+  Edit,
+  Flame,
+  Target,
+  Activity,
+  Utensils,
+  RotateCcw,
+} from "lucide-react";
+import { useApp } from "@/context/AppContext";
+import { BottomNav } from "@/components/BottomNav";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { calculateTargetCalories, calculateMacros } from "@/lib/calculations";
+import { GOALS, DIET_TYPES, ACTIVITY_LEVELS } from "@/types";
+import { MacroDisplay } from "@/components/MacroDisplay";
+import { Progress } from "@/components/ui/progress";
 
 export default function ProfilePage() {
-  const { user, setUser, isDarkMode, toggleDarkMode, getDailyLog, getRemainingCalories, resetDailyLog } = useApp();
+  const {
+    user,
+    setUser,
+    isDarkMode,
+    toggleDarkMode,
+    getDailyLog,
+    getRemainingCalories,
+    resetDailyLog,
+  } = useApp();
 
   if (!user) {
     return (
@@ -22,25 +43,31 @@ export default function ProfilePage() {
   }
 
   const targetCalories = calculateTargetCalories(user.tdee, user.goals);
-  const primaryDiet = user.dietTypes[0] as typeof DIET_TYPES[number]['id'];
+  const primaryDiet = user.dietTypes[0] as (typeof DIET_TYPES)[number]["id"];
   const macros = calculateMacros(targetCalories, primaryDiet);
-  const goalData = GOALS.find(g => g.id === user.goals);
-  const dietLabels = user.dietTypes.map(d => DIET_TYPES.find(dt => dt.id === d)?.label).filter(Boolean).join(', ');
-  const activityData = ACTIVITY_LEVELS.find(a => a.id === user.activityLevel);
-  
+  const goalData = GOALS.find((g) => g.id === user.goals);
+  const dietLabels = user.dietTypes
+    .map((d) => DIET_TYPES.find((dt) => dt.id === d)?.label)
+    .filter(Boolean)
+    .join(", ");
+  const activityData = ACTIVITY_LEVELS.find((a) => a.id === user.activityLevel);
+
   const dailyLog = getDailyLog();
   const remainingCalories = getRemainingCalories();
-  const calorieProgress = Math.min(100, (dailyLog.totalCalories / targetCalories) * 100);
-  const showZoneBlocks = user.dietTypes.includes('zone');
+  const calorieProgress = Math.min(
+    100,
+    (dailyLog.totalCalories / targetCalories) * 100
+  );
+  const showZoneBlocks = user.dietTypes.includes("zone");
 
   const handleReset = () => {
-    if (confirm('Сигурни ли сте, че искате да нулирате профила си?')) {
+    if (confirm("Сигурни ли сте, че искате да нулирате профила си?")) {
       setUser(null);
     }
   };
 
   const handleResetDailyLog = () => {
-    if (confirm('Сигурни ли сте, че искате да нулирате дневния лог?')) {
+    if (confirm("Сигурни ли сте, че искате да нулирате дневния лог?")) {
       resetDailyLog();
     }
   };
@@ -55,7 +82,7 @@ export default function ProfilePage() {
             </div>
             <div>
               <h1 className="font-display text-xl font-bold text-foreground">
-                {user.gender === 'male' ? 'Потребител' : 'Потребителка'}
+                {user.gender === "male" ? "Потребител" : "Потребителка"}
               </h1>
               <p className="text-muted-foreground text-sm">
                 {user.age} години • {user.weight} кг • {user.height} см
@@ -66,7 +93,6 @@ export default function ProfilePage() {
       </header>
 
       <main className="px-4 max-w-lg mx-auto -mt-2">
-        {/* Daily Progress Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -86,7 +112,7 @@ export default function ProfilePage() {
               <RotateCcw className="w-4 h-4" />
             </Button>
           </div>
-          
+
           <div className="mb-4">
             <div className="flex justify-between text-sm mb-2">
               <span className="text-muted-foreground">
@@ -98,24 +124,29 @@ export default function ProfilePage() {
             </div>
             <Progress value={calorieProgress} className="h-3" />
           </div>
-          
+
           <div className="grid grid-cols-3 gap-2 text-center text-sm">
             <div>
               <p className="text-muted-foreground">Консумирано</p>
-              <p className="font-bold text-foreground">{dailyLog.consumedMeals.length} ястия</p>
+              <p className="font-bold text-foreground">
+                {dailyLog.consumedMeals.length} ястия
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Протеин</p>
-              <p className="font-bold text-macro-protein">{dailyLog.totalProtein}г / {macros.protein}г</p>
+              <p className="font-bold text-macro-protein">
+                {dailyLog.totalProtein}г / {macros.protein}г
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Въглехидрати</p>
-              <p className="font-bold text-macro-carbs">{dailyLog.totalCarbs}г / {macros.carbs}г</p>
+              <p className="font-bold text-macro-carbs">
+                {dailyLog.totalCarbs}г / {macros.carbs}г
+              </p>
             </div>
           </div>
         </motion.div>
 
-        {/* Stats Cards */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -123,7 +154,9 @@ export default function ProfilePage() {
         >
           <div className="bg-card rounded-xl p-4 border border-border text-center">
             <Flame className="w-5 h-5 text-secondary mx-auto mb-1" />
-            <p className="text-xl font-bold text-foreground">{targetCalories}</p>
+            <p className="text-xl font-bold text-foreground">
+              {targetCalories}
+            </p>
             <p className="text-xs text-muted-foreground">kcal/ден</p>
           </div>
           <div className="bg-card rounded-xl p-4 border border-border text-center">
@@ -138,7 +171,6 @@ export default function ProfilePage() {
           </div>
         </motion.div>
 
-        {/* Macros with distinct colors */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -154,7 +186,6 @@ export default function ProfilePage() {
           />
         </motion.div>
 
-        {/* Profile Info */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -162,17 +193,17 @@ export default function ProfilePage() {
           className="bg-card rounded-xl border border-border mb-6"
         >
           <div className="p-4 border-b border-border">
-            <h3 className="font-semibold text-foreground">Настройки на профила</h3>
+            <h3 className="font-semibold text-foreground">
+              Настройки на профила
+            </h3>
           </div>
-          
           <div className="divide-y divide-border">
-            <InfoRow label="Цел" value={goalData?.label || ''} />
+            <InfoRow label="Цел" value={goalData?.label || ""} />
             <InfoRow label="Тип хранене" value={dietLabels} />
-            <InfoRow label="Активност" value={activityData?.label || ''} />
+            <InfoRow label="Активност" value={activityData?.label || ""} />
           </div>
         </motion.div>
 
-        {/* Settings */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -182,17 +213,19 @@ export default function ProfilePage() {
           <div className="p-4 border-b border-border">
             <h3 className="font-semibold text-foreground">Настройки</h3>
           </div>
-          
           <div className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {isDarkMode ? <Moon className="w-5 h-5 text-muted-foreground" /> : <Sun className="w-5 h-5 text-muted-foreground" />}
+              {isDarkMode ? (
+                <Moon className="w-5 h-5 text-muted-foreground" />
+              ) : (
+                <Sun className="w-5 h-5 text-muted-foreground" />
+              )}
               <span className="text-foreground">Тъмен режим</span>
             </div>
             <Switch checked={isDarkMode} onCheckedChange={toggleDarkMode} />
           </div>
         </motion.div>
 
-        {/* Actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -207,7 +240,6 @@ export default function ProfilePage() {
             <Edit className="w-5 h-5" />
             Редактирай профила
           </Button>
-          
           <Button
             variant="outline"
             className="w-full justify-start gap-3 text-destructive border-destructive/30 hover:bg-destructive/10"
@@ -228,7 +260,9 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="px-4 py-3 flex justify-between items-center">
       <span className="text-muted-foreground text-sm">{label}</span>
-      <span className="font-medium text-foreground text-sm text-right max-w-[60%]">{value}</span>
+      <span className="font-medium text-foreground text-sm text-right max-w-[60%]">
+        {value}
+      </span>
     </div>
   );
 }

@@ -1,35 +1,38 @@
-import { Home, Search, ShoppingCart, User } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+"use client";
+
+import { Home, Search, ShoppingCart, User } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 const navItems = [
-  { path: '/', icon: Home, label: 'Начало' },
-  { path: '/search', icon: Search, label: 'Търсене' },
-  { path: '/shopping', icon: ShoppingCart, label: 'Списък' },
-  { path: '/profile', icon: User, label: 'Профил' },
+  { path: "/", icon: Home, label: "Начало" },
+  { path: "/search", icon: Search, label: "Търсене" },
+  { path: "/shopping", icon: ShoppingCart, label: "Списък" },
+  { path: "/profile", icon: User, label: "Профил" },
 ];
 
 export function BottomNav() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname();
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border safe-bottom">
       <div className="flex items-center justify-around h-16 max-w-lg mx-auto px-4">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive = pathname === item.path;
           const Icon = item.icon;
-          
+
           return (
-            <button
+            <Link
               key={item.path}
-              onClick={() => navigate(item.path)}
+              href={item.path}
               className={cn(
                 "relative flex flex-col items-center justify-center w-16 h-full transition-colors",
                 isActive ? "text-primary" : "text-muted-foreground"
               )}
             >
+              <span className="sr-only">{item.label}</span>
               {isActive && (
                 <motion.div
                   layoutId="nav-indicator"
@@ -39,7 +42,7 @@ export function BottomNav() {
               )}
               <Icon className="w-5 h-5" />
               <span className="text-xs mt-1 font-medium">{item.label}</span>
-            </button>
+            </Link>
           );
         })}
       </div>

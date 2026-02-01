@@ -1,64 +1,67 @@
-import { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, ChevronRight, Plus, Shield } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useApp } from '@/context/AppContext';
-import { BottomNav } from '@/components/BottomNav';
-import { RecipeCard } from '@/components/RecipeCard';
-import { CategoryFilter, TagFilter } from '@/components/CategoryFilter';
-import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
-import { Button } from '@/components/ui/button';
-import { CATEGORIES, TAGS, DIET_TYPES } from '@/types';
+"use client";
+
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { Sparkles, ChevronRight, Plus, Shield } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useApp } from "@/context/AppContext";
+import { BottomNav } from "@/components/BottomNav";
+import { RecipeCard } from "@/components/RecipeCard";
+import { CategoryFilter, TagFilter } from "@/components/CategoryFilter";
+import { OnboardingWizard } from "@/components/onboarding/OnboardingWizard";
+import { Button } from "@/components/ui/button";
+import { CATEGORIES, TAGS, DIET_TYPES } from "@/types";
 
 export default function HomePage() {
   const { user, recipes } = useApp();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
-  // All hooks must be called before any conditional returns
   const dietLabels = useMemo(() => {
-    if (!user) return '';
+    if (!user) return "";
     return user.dietTypes
-      .map(d => DIET_TYPES.find(dt => dt.id === d)?.label)
+      .map((d) => DIET_TYPES.find((dt) => dt.id === d)?.label)
       .filter(Boolean)
-      .join(', ');
+      .join(", ");
   }, [user]);
 
-  // Filter recommended recipes based on user's diet types (any match)
   const recommendedRecipes = useMemo(() => {
     if (!user) return [];
     return recipes
-      .filter(r => r.status === 'approved' && r.dietTypes.some(d => user.dietTypes.includes(d)))
+      .filter(
+        (r) =>
+          r.status === "approved" &&
+          r.dietTypes.some((d) => user.dietTypes.includes(d))
+      )
       .slice(0, 4);
   }, [recipes, user]);
 
-  // Filter all recipes based on selected category and tags
   const filteredRecipes = useMemo(() => {
-    return recipes.filter(r => {
-      if (r.status !== 'approved') return false;
+    return recipes.filter((r) => {
+      if (r.status !== "approved") return false;
       if (selectedCategory && r.category !== selectedCategory) return false;
-      if (selectedTags.length > 0 && !selectedTags.some(t => r.tags.includes(t as any))) return false;
+      if (
+        selectedTags.length > 0 &&
+        !selectedTags.some((t) => r.tags.includes(t as any))
+      )
+        return false;
       return true;
     });
   }, [recipes, selectedCategory, selectedTags]);
 
   const toggleTag = (tagId: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tagId) 
-        ? prev.filter(t => t !== tagId)
-        : [...prev, tagId]
+    setSelectedTags((prev) =>
+      prev.includes(tagId) ? prev.filter((t) => t !== tagId) : [...prev, tagId]
     );
   };
 
-  // Show onboarding if user hasn't completed it - AFTER all hooks
   if (!user?.onboardingComplete) {
     return <OnboardingWizard />;
   }
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      {/* Header */}
       <header className="gradient-hero px-4 pt-8 pb-6">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -69,8 +72,6 @@ export default function HomePage() {
           <h1 className="font-display text-2xl font-bold text-foreground mt-1">
             Какво ще готвим днес?
           </h1>
-          
-          {/* Daily Stats Card */}
           <div className="mt-4 gradient-primary rounded-xl p-4 text-primary-foreground">
             <div className="flex items-center justify-between">
               <div>
@@ -86,18 +87,17 @@ export default function HomePage() {
         </motion.div>
       </header>
 
-      {/* Action Buttons */}
       <div className="px-4 max-w-lg mx-auto -mt-3 mb-4 flex gap-2">
-        <Button 
-          onClick={() => navigate('/submit-recipe')} 
+        <Button
+          onClick={() => router.push("/submit-recipe")}
           className="flex-1"
           variant="outline"
         >
           <Plus className="h-4 w-4 mr-2" />
           Добави рецепта
         </Button>
-        <Button 
-          onClick={() => navigate('/admin')} 
+        <Button
+          onClick={() => router.push("/admin")}
           variant="ghost"
           size="icon"
           title="Админ панел"
@@ -107,7 +107,6 @@ export default function HomePage() {
       </div>
 
       <main className="px-4 max-w-lg mx-auto">
-        {/* Recommended Section */}
         <section className="mt-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -116,8 +115,8 @@ export default function HomePage() {
                 Препоръчано за вас
               </h2>
             </div>
-            <button 
-              onClick={() => navigate('/search')}
+            <button
+              onClick={() => router.push("/search")}
               className="text-primary text-sm font-medium flex items-center gap-1"
             >
               Виж всички
@@ -134,16 +133,15 @@ export default function HomePage() {
                 transition={{ delay: index * 0.1 }}
                 className="flex-shrink-0 w-64"
               >
-                <RecipeCard 
-                  recipe={recipe} 
-                  onClick={() => navigate(`/recipe/${recipe.id}`)}
+                <RecipeCard
+                  recipe={recipe}
+                  onClick={() => router.push(`/recipe/${recipe.id}`)}
                 />
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* Browse All Section */}
         <section className="mt-8">
           <h2 className="font-display text-lg font-semibold text-foreground mb-4">
             Разгледайте всички
@@ -171,10 +169,10 @@ export default function HomePage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <RecipeCard 
-                  recipe={recipe} 
+                <RecipeCard
+                  recipe={recipe}
                   variant="compact"
-                  onClick={() => navigate(`/recipe/${recipe.id}`)}
+                  onClick={() => router.push(`/recipe/${recipe.id}`)}
                 />
               </motion.div>
             ))}

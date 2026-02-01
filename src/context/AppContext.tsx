@@ -1,13 +1,32 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { UserProfile, Recipe, ShoppingItem, ConsumedMeal, DailyLog, Comment, Rating } from '@/types';
-import { mockRecipes } from '@/data/mockRecipes';
+"use client";
+
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import {
+  UserProfile,
+  Recipe,
+  ShoppingItem,
+  ConsumedMeal,
+  DailyLog,
+  Comment,
+  Rating,
+} from "@/types";
+import { mockRecipes } from "@/data/mockRecipes";
 
 interface AppContextType {
   user: UserProfile | null;
   setUser: (user: UserProfile | null) => void;
   recipes: Recipe[];
   addRecipe: (recipe: Recipe) => void;
-  updateRecipeStatus: (recipeId: string, status: 'pending' | 'approved' | 'rejected') => void;
+  updateRecipeStatus: (
+    recipeId: string,
+    status: "pending" | "approved" | "rejected"
+  ) => void;
   shoppingList: ShoppingItem[];
   addToShoppingList: (items: ShoppingItem[]) => void;
   removeFromShoppingList: (recipeId: string) => void;
@@ -16,20 +35,23 @@ interface AppContextType {
   isDarkMode: boolean;
   toggleDarkMode: () => void;
   // Daily tracking
-  markMealConsumed: (meal: Omit<ConsumedMeal, 'consumedAt'>) => void;
+  markMealConsumed: (meal: Omit<ConsumedMeal, "consumedAt">) => void;
   getDailyLog: () => DailyLog;
   getRemainingCalories: () => number;
   getRemainingMacros: () => { protein: number; carbs: number; fat: number };
   resetDailyLog: () => void;
   // Community features
-  addComment: (recipeId: string, comment: Omit<Comment, 'id' | 'createdAt'>) => void;
+  addComment: (
+    recipeId: string,
+    comment: Omit<Comment, "id" | "createdAt">
+  ) => void;
   addRating: (recipeId: string, rating: number) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 function getTodayDateString(): string {
-  return new Date().toISOString().split('T')[0];
+  return new Date().toISOString().split("T")[0];
 }
 
 function createEmptyDailyLog(): DailyLog {
@@ -45,7 +67,8 @@ function createEmptyDailyLog(): DailyLog {
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<UserProfile | null>(() => {
-    const saved = localStorage.getItem('fitnutri-user');
+    if (typeof window === "undefined") return null;
+    const saved = localStorage.getItem("fitnutri-user");
     if (saved) {
       const parsed = JSON.parse(saved);
       // Ensure dailyLog exists and is for today
@@ -61,24 +84,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     return null;
   });
-  
+
   const [recipes, setRecipes] = useState<Recipe[]>(() => {
     // Add default community fields to mock recipes
-    return mockRecipes.map(r => ({
+    return mockRecipes.map((r) => ({
       ...r,
       ratings: r.ratings || [],
       comments: r.comments || [],
       averageRating: r.averageRating || 0,
     }));
   });
-  
+
   const [shoppingList, setShoppingList] = useState<ShoppingItem[]>(() => {
-    const saved = localStorage.getItem('fitnutri-shopping');
+    if (typeof window === "undefined") return [];
+    const saved = localStorage.getItem("fitnutri-shopping");
     return saved ? JSON.parse(saved) : [];
   });
-  
+
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem('fitnutri-darkmode');
+    if (typeof window === "undefined") return false;
+    const saved = localStorage.getItem("fitnutri-darkmode");
     return saved ? JSON.parse(saved) : false;
   });
 
@@ -91,22 +116,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem('fitnutri-user', JSON.stringify(user));
+      localStorage.setItem("fitnutri-user", JSON.stringify(user));
     } else {
-      localStorage.removeItem('fitnutri-user');
+      localStorage.removeItem("fitnutri-user");
     }
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('fitnutri-shopping', JSON.stringify(shoppingList));
+    localStorage.setItem("fitnutri-shopping", JSON.stringify(shoppingList));
   }, [shoppingList]);
 
   useEffect(() => {
-    localStorage.setItem('fitnutri-darkmode', JSON.stringify(isDarkMode));
+    localStorage.setItem("fitnutri-darkmode", JSON.stringify(isDarkMode));
     if (isDarkMode) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
   }, [isDarkMode]);
 
@@ -121,26 +146,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const addRecipe = (recipe: Recipe) => {
-    setRecipes(prev => [...prev, recipe]);
+    setRecipes((prev) => [...prev, recipe]);
   };
 
-  const updateRecipeStatus = (recipeId: string, status: 'pending' | 'approved' | 'rejected') => {
-    setRecipes(prev => prev.map(recipe => 
-      recipe.id === recipeId ? { ...recipe, status } : recipe
-    ));
+  const updateRecipeStatus = (
+    recipeId: string,
+    status: "pending" | "approved" | "rejected"
+  ) => {
+    setRecipes((prev) =>
+      prev.map((recipe) =>
+        recipe.id === recipeId ? { ...recipe, status } : recipe
+      )
+    );
   };
 
   const addToShoppingList = (items: ShoppingItem[]) => {
-    setShoppingList(prev => [...prev, ...items]);
+    setShoppingList((prev) => [...prev, ...items]);
   };
 
   const removeFromShoppingList = (recipeId: string) => {
-    setShoppingList(prev => prev.filter(item => item.recipeId !== recipeId));
+    setShoppingList((prev) =>
+      prev.filter((item) => item.recipeId !== recipeId)
+    );
   };
 
   const toggleShoppingItem = (index: number) => {
-    setShoppingList(prev => 
-      prev.map((item, i) => 
+    setShoppingList((prev) =>
+      prev.map((item, i) =>
         i === index ? { ...item, checked: !item.checked } : item
       )
     );
@@ -155,9 +187,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   // Daily tracking functions
-  const markMealConsumed = (meal: Omit<ConsumedMeal, 'consumedAt'>) => {
+  const markMealConsumed = (meal: Omit<ConsumedMeal, "consumedAt">) => {
     if (!user) return;
-    
+
     const consumedMeal: ConsumedMeal = {
       ...meal,
       consumedAt: new Date(),
@@ -184,31 +216,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const getRemainingCalories = (): number => {
     if (!user) return 0;
-    const targetCalories = user.tdee + (user.goals === 'lose' ? -500 : user.goals === 'gain' ? 500 : 0);
+    const targetCalories =
+      user.tdee +
+      (user.goals === "lose" ? -500 : user.goals === "gain" ? 500 : 0);
     return Math.max(0, targetCalories - user.dailyLog.totalCalories);
   };
 
   const getRemainingMacros = () => {
     if (!user) return { protein: 0, carbs: 0, fat: 0 };
-    
+
     // Calculate target macros based on diet type (using first selected diet for simplicity)
-    const targetCalories = user.tdee + (user.goals === 'lose' ? -500 : user.goals === 'gain' ? 500 : 0);
-    const primaryDiet = user.dietTypes[0] || 'balanced';
-    
-    let proteinRatio = 0.3, carbsRatio = 0.4, fatRatio = 0.3;
-    
+    const targetCalories =
+      user.tdee +
+      (user.goals === "lose" ? -500 : user.goals === "gain" ? 500 : 0);
+    const primaryDiet = user.dietTypes[0] || "balanced";
+
+    let proteinRatio = 0.3,
+      carbsRatio = 0.4,
+      fatRatio = 0.3;
+
     switch (primaryDiet) {
-      case 'keto':
-        proteinRatio = 0.25; carbsRatio = 0.05; fatRatio = 0.70;
+      case "keto":
+        proteinRatio = 0.25;
+        carbsRatio = 0.05;
+        fatRatio = 0.7;
         break;
-      case 'highProtein':
-        proteinRatio = 0.40; carbsRatio = 0.35; fatRatio = 0.25;
+      case "highProtein":
+        proteinRatio = 0.4;
+        carbsRatio = 0.35;
+        fatRatio = 0.25;
         break;
-      case 'zone':
-        proteinRatio = 0.30; carbsRatio = 0.40; fatRatio = 0.30;
+      case "zone":
+        proteinRatio = 0.3;
+        carbsRatio = 0.4;
+        fatRatio = 0.3;
         break;
-      case 'vegan':
-        proteinRatio = 0.25; carbsRatio = 0.50; fatRatio = 0.25;
+      case "vegan":
+        proteinRatio = 0.25;
+        carbsRatio = 0.5;
+        fatRatio = 0.25;
         break;
     }
 
@@ -232,73 +278,88 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   // Community features
-  const addComment = (recipeId: string, commentData: Omit<Comment, 'id' | 'createdAt'>) => {
-    setRecipes(prev => prev.map(recipe => {
-      if (recipe.id !== recipeId) return recipe;
-      
-      const newComment: Comment = {
-        ...commentData,
-        id: crypto.randomUUID(),
-        createdAt: new Date(),
-      };
-      
-      return {
-        ...recipe,
-        comments: [...(recipe.comments || []), newComment],
-      };
-    }));
+  const addComment = (
+    recipeId: string,
+    commentData: Omit<Comment, "id" | "createdAt">
+  ) => {
+    setRecipes((prev) =>
+      prev.map((recipe) => {
+        if (recipe.id !== recipeId) return recipe;
+
+        const newComment: Comment = {
+          ...commentData,
+          id: crypto.randomUUID(),
+          createdAt: new Date(),
+        };
+
+        return {
+          ...recipe,
+          comments: [...(recipe.comments || []), newComment],
+        };
+      })
+    );
   };
 
   const addRating = (recipeId: string, rating: number) => {
     if (!user) return;
-    
-    setRecipes(prev => prev.map(recipe => {
-      if (recipe.id !== recipeId) return recipe;
-      
-      const existingRatings = recipe.ratings || [];
-      const userRatingIndex = existingRatings.findIndex(r => r.userId === user.id);
-      
-      let newRatings: Rating[];
-      if (userRatingIndex >= 0) {
-        newRatings = existingRatings.map((r, i) => 
-          i === userRatingIndex ? { ...r, rating, createdAt: new Date() } : r
+
+    setRecipes((prev) =>
+      prev.map((recipe) => {
+        if (recipe.id !== recipeId) return recipe;
+
+        const existingRatings = recipe.ratings || [];
+        const userRatingIndex = existingRatings.findIndex(
+          (r) => r.userId === user.id
         );
-      } else {
-        newRatings = [...existingRatings, { userId: user.id, rating, createdAt: new Date() }];
-      }
-      
-      const averageRating = newRatings.reduce((sum, r) => sum + r.rating, 0) / newRatings.length;
-      
-      return {
-        ...recipe,
-        ratings: newRatings,
-        averageRating: Math.round(averageRating * 10) / 10,
-      };
-    }));
+
+        let newRatings: Rating[];
+        if (userRatingIndex >= 0) {
+          newRatings = existingRatings.map((r, i) =>
+            i === userRatingIndex ? { ...r, rating, createdAt: new Date() } : r
+          );
+        } else {
+          newRatings = [
+            ...existingRatings,
+            { userId: user.id, rating, createdAt: new Date() },
+          ];
+        }
+
+        const averageRating =
+          newRatings.reduce((sum, r) => sum + r.rating, 0) / newRatings.length;
+
+        return {
+          ...recipe,
+          ratings: newRatings,
+          averageRating: Math.round(averageRating * 10) / 10,
+        };
+      })
+    );
   };
 
   return (
-    <AppContext.Provider value={{
-      user,
-      setUser,
-      recipes,
-      addRecipe,
-      updateRecipeStatus,
-      shoppingList,
-      addToShoppingList,
-      removeFromShoppingList,
-      toggleShoppingItem,
-      clearShoppingList,
-      isDarkMode,
-      toggleDarkMode,
-      markMealConsumed,
-      getDailyLog,
-      getRemainingCalories,
-      getRemainingMacros,
-      resetDailyLog,
-      addComment,
-      addRating,
-    }}>
+    <AppContext.Provider
+      value={{
+        user,
+        setUser,
+        recipes,
+        addRecipe,
+        updateRecipeStatus,
+        shoppingList,
+        addToShoppingList,
+        removeFromShoppingList,
+        toggleShoppingItem,
+        clearShoppingList,
+        isDarkMode,
+        toggleDarkMode,
+        markMealConsumed,
+        getDailyLog,
+        getRemainingCalories,
+        getRemainingMacros,
+        resetDailyLog,
+        addComment,
+        addRating,
+      }}
+    >
       {children}
     </AppContext.Provider>
   );
@@ -307,7 +368,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 export function useApp() {
   const context = useContext(AppContext);
   if (!context) {
-    throw new Error('useApp must be used within AppProvider');
+    throw new Error("useApp must be used within AppProvider");
   }
   return context;
 }

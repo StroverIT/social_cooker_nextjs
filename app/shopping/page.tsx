@@ -1,36 +1,28 @@
-import { useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { Trash2, Check, ShoppingBag } from 'lucide-react';
-import { useApp } from '@/context/AppContext';
-import { BottomNav } from '@/components/BottomNav';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { INGREDIENT_CATEGORIES } from '@/types';
+"use client";
+
+import { useMemo } from "react";
+import { motion } from "framer-motion";
+import { Trash2, ShoppingBag } from "lucide-react";
+import { useApp } from "@/context/AppContext";
+import { BottomNav } from "@/components/BottomNav";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { INGREDIENT_CATEGORIES } from "@/types";
 
 export default function ShoppingPage() {
-  const { shoppingList, toggleShoppingItem, clearShoppingList, removeFromShoppingList } = useApp();
+  const { shoppingList, toggleShoppingItem, clearShoppingList } = useApp();
 
-  // Group items by ingredient category
   const groupedItems = useMemo(() => {
     const groups: Record<string, typeof shoppingList> = {};
-    
-    shoppingList.forEach(item => {
-      const category = item.category || 'other';
-      if (!groups[category]) {
-        groups[category] = [];
-      }
+    shoppingList.forEach((item) => {
+      const category = item.category || "other";
+      if (!groups[category]) groups[category] = [];
       groups[category].push(item);
     });
-
     return groups;
   }, [shoppingList]);
 
-  // Get unique recipe IDs
-  const recipeIds = useMemo(() => {
-    return [...new Set(shoppingList.map(item => item.recipeId))];
-  }, [shoppingList]);
-
-  const checkedCount = shoppingList.filter(item => item.checked).length;
+  const checkedCount = shoppingList.filter((item) => item.checked).length;
   const totalCount = shoppingList.length;
 
   if (shoppingList.length === 0) {
@@ -43,7 +35,6 @@ export default function ShoppingPage() {
             </h1>
           </div>
         </header>
-
         <main className="px-4 max-w-lg mx-auto">
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -53,11 +44,11 @@ export default function ShoppingPage() {
               Списъкът е празен
             </h2>
             <p className="text-muted-foreground text-center text-sm">
-              Добавете съставки от рецепти, за да създадете вашия списък за пазаруване
+              Добавете съставки от рецепти, за да създадете вашия списък за
+              пазаруване
             </p>
           </div>
         </main>
-
         <BottomNav />
       </div>
     );
@@ -81,11 +72,11 @@ export default function ShoppingPage() {
               Изчисти
             </Button>
           </div>
-          
-          {/* Progress */}
           <div className="mt-3">
             <div className="flex justify-between text-sm text-muted-foreground mb-1">
-              <span>{checkedCount} от {totalCount} продукта</span>
+              <span>
+                {checkedCount} от {totalCount} продукта
+              </span>
               <span>{Math.round((checkedCount / totalCount) * 100)}%</span>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -101,8 +92,7 @@ export default function ShoppingPage() {
       </header>
 
       <main className="px-4 max-w-lg mx-auto pt-4">
-        {/* Category Groups */}
-        {INGREDIENT_CATEGORIES.map(category => {
+        {INGREDIENT_CATEGORIES.map((category) => {
           const items = groupedItems[category.id];
           if (!items || items.length === 0) return null;
 
@@ -119,7 +109,7 @@ export default function ShoppingPage() {
               <div className="space-y-2">
                 {items.map((item, index) => {
                   const itemIndex = shoppingList.findIndex(
-                    i => i.name === item.name && i.recipeId === item.recipeId
+                    (i) => i.name === item.name && i.recipeId === item.recipeId
                   );
                   return (
                     <motion.div
@@ -127,7 +117,7 @@ export default function ShoppingPage() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       className={`flex items-center gap-3 p-3 bg-card rounded-xl border border-border ${
-                        item.checked ? 'opacity-60' : ''
+                        item.checked ? "opacity-60" : ""
                       }`}
                     >
                       <Checkbox
@@ -136,9 +126,11 @@ export default function ShoppingPage() {
                         className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                       />
                       <div className="flex-1">
-                        <p className={`font-medium text-foreground ${
-                          item.checked ? 'line-through' : ''
-                        }`}>
+                        <p
+                          className={`font-medium text-foreground ${
+                            item.checked ? "line-through" : ""
+                          }`}
+                        >
                           {item.name}
                         </p>
                         <p className="text-xs text-muted-foreground">
